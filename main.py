@@ -17,9 +17,11 @@ app = Flask(__name__, template_folder="app/templates")  # explicitly point to te
 # ---------------------------
 # Load base EfficientNet
 model = models.efficientnet_b0(pretrained=False)
+
 # Update classifier to match 11 classes
 num_features = model.classifier[1].in_features
 model.classifier[1] = nn.Linear(num_features, 11)
+
 # Load trained weights
 MODEL_PATH = os.path.join("models", "efficientnet_medicinal_leaves_model.pth")
 model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
@@ -68,14 +70,18 @@ def index():
     if request.method == "POST":
         file = request.files.get("image")
         if file:
-            upload_dir = "uploads"
-            os.makedirs(upload_dir, exist_ok=True)
-            # secure filename for safety
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(upload_dir, filename)
-            file.save(filepath)
-            prediction = predict_image(filepath)
-            uploaded_file = filename
+            try:
+                upload_dir = "uploads"
+                os.makedirs(upload_dir, exist_ok=True)
+                # secure filename for safety
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(upload_dir, filename)
+                file.save(filepath)
+
+                prediction = predict_image(filepath)
+                uploaded_file = filename
+            except Exception as e:
+                return f"Error during prediction: {str(e)}", 500
     return render_template("index.html", prediction=prediction, uploaded_file=uploaded_file)
 
 # Health check route for debugging
