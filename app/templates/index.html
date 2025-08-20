@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌿 Medicinal Leaf Classifier</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #f0fff4, #c6f6d5);
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      font-size: 2.8em;
+      color: #276749;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 1.8em;
+      color: #2f855a;
+    }
+    form {
+      margin: 20px auto;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0px 6px 15px rgba(0,0,0,0.2);
+      width: 50%;
+    }
+    input[type="file"] {
+      margin: 15px 0;
+    }
+    button {
+      background: #2f855a;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.8em;
+    }
+    button:hover {
+      background: #276749;
+    }
+    .result {
+      margin-top: 30px;
+      font-size: 1.6em;
+      font-weight: bold;
+      color: #22543d;
+    }
+    .card {
+      margin: 20px auto;
+      padding: 20px;
+      width: 55%;
+      border: 2px solid #276749;
+      border-radius: 15px;
+      background: #f0fff4;
+      box-shadow: 0px 6px 12px rgba(0,0,0,0.15);
+      text-align: left;
+    }
+    .card h3 {
+      color: #276749;
+    }
+    .preview {
+      margin-top: 15px;
+    }
+    .preview img {
+      max-width: 300px;
+      border-radius: 12px;
+      border: 2px solid #276749;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+    }
+    /* Loader animation */
+    .loader {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #2f855a;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>🌿 Medicinal Leaf Classifier 🌿</h1>
+  <p>Upload an image of a leaf and discover its medicinal plant type.</p>
+
+  <form method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+    <input type="file" name="image" accept="image/*" onchange="previewImage(event)" required>
+    <br>
+    <button type="submit">Classify Leaf</button>
+    <div class="loader" id="loader"></div>
+    <div class="preview" id="preview"></div>
+  </form>
+
+  {% if prediction %}
+  <div class="result">
+    ✅ Predicted Plant: <span style="color:#2f855a;">{{ prediction }}</span>
+  </div>
+
+  <div class="card">
+    <h3>🌱 About {{ prediction }}</h3>
+    <p>
+      {% if prediction == "Balloon Vine" %}
+          Used in traditional medicine for joint pain and skin diseases.
+      {% elif prediction == "Bringaraja" %}
+          Known for improving hair growth and liver health.
+      {% elif prediction == "Caricature" %}
+          Contains medicinal properties often used in Ayurveda.
+      {% elif prediction == "Catharanthus" %}
+          Used in cancer treatment (vincristine, vinblastine).
+      {% elif prediction == "Drumstick" %}
+          Rich in vitamins; boosts immunity and improves bone health.
+      {% elif prediction == "Eucalyptus" %}
+          Used for cold, cough, and respiratory relief.
+      {% elif prediction == "Ganigale" %}
+          Traditionally used for digestive and healing purposes.
+      {% elif prediction == "Henna" %}
+          Known for cooling effect, hair dye, and wound healing.
+      {% elif prediction == "Hibiscus" %}
+          Used in hair care, lowers blood pressure, rich in antioxidants.
+      {% elif prediction == "Rose" %}
+          Improves skin health and used in aromatherapy.
+      {% elif prediction == "Spinach1" %}
+          Rich in iron, improves blood health and immunity.
+      {% endif %}
+    </p>
+  </div>
+  {% endif %}
+
+  <script>
+    function previewImage(event) {
+      let reader = new FileReader();
+      reader.onload = function(){
+        let output = document.getElementById('preview');
+        output.innerHTML = "<img src='" + reader.result + "' alt='Uploaded Leaf'>";
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function showLoader() {
+      document.getElementById('loader').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

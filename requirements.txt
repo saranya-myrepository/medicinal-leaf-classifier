@@ -1,0 +1,6 @@
+flask==3.1.2
+torch==2.8.0
+torchvision==0.23.0
+efficientnet_pytorch==0.7.1
+pillow==11.3.0
+gunicorn==23.0.0
