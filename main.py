@@ -15,14 +15,11 @@ app = Flask(__name__, template_folder="app/templates")  # explicitly point to te
 # ---------------------------
 # 2. Model Setup
 # ---------------------------
-
 # Load base EfficientNet
 model = models.efficientnet_b0(pretrained=False)
-
 # Update classifier to match 11 classes
 num_features = model.classifier[1].in_features
 model.classifier[1] = nn.Linear(num_features, 11)
-
 # Load trained weights
 MODEL_PATH = os.path.join("models", "efficientnet_medicinal_leaves_model.pth")
 model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
@@ -56,11 +53,9 @@ class_labels = [
 def predict_image(image_path):
     image = Image.open(image_path).convert("RGB")
     image = transform(image).unsqueeze(0)  # add batch dimension
-
     with torch.no_grad():
         outputs = model(image)
         _, predicted = outputs.max(1)
-
     return class_labels[predicted.item()]
 
 # ---------------------------
@@ -70,22 +65,23 @@ def predict_image(image_path):
 def index():
     prediction = None
     uploaded_file = None
-
     if request.method == "POST":
         file = request.files.get("image")
         if file:
             upload_dir = "uploads"
             os.makedirs(upload_dir, exist_ok=True)
-
             # secure filename for safety
             filename = secure_filename(file.filename)
             filepath = os.path.join(upload_dir, filename)
             file.save(filepath)
-
             prediction = predict_image(filepath)
             uploaded_file = filename
-
     return render_template("index.html", prediction=prediction, uploaded_file=uploaded_file)
+
+# Health check route for debugging
+@app.route("/ping")
+def ping():
+    return "pong"
 
 # ---------------------------
 # 5. Main Entry
