@@ -5,12 +5,12 @@ import torchvision.models as models
 from torchvision import transforms
 from flask import Flask, render_template, request
 from PIL import Image
-from werkzeug.utils import secure_filename
+from io import BytesIO  # <--- NEW
 
 # ---------------------------
 # 1. Flask Setup
 # ---------------------------
-app = Flask(__name__, template_folder="app/templates")  # explicitly point to templates
+app = Flask(__name__, template_folder="app/templates")
 
 # ---------------------------
 # 2. Model Setup
@@ -24,6 +24,9 @@ model.classifier[1] = nn.Linear(num_features, 11)
 
 # Load trained weights
 MODEL_PATH = os.path.join("models", "efficientnet_medicinal_leaves_model.pth")
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"Model file not found at {MODEL_PATH}. Make sure it's in your repo!")
+
 model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
 model.eval()
 
@@ -52,8 +55,9 @@ class_labels = [
     "Spinach1"
 ]
 
-def predict_image(image_path):
-    image = Image.open(image_path).convert("RGB")
+def predict_image(file):
+    # Read image directly from uploaded file in memory
+    image = Image.open(BytesIO(file.read())).convert("RGB")
     image = transform(image).unsqueeze(0)  # add batch dimension
     with torch.no_grad():
         outputs = model(image)
@@ -71,20 +75,13 @@ def index():
         file = request.files.get("image")
         if file:
             try:
-                upload_dir = "uploads"
-                os.makedirs(upload_dir, exist_ok=True)
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(upload_dir, filename)
-                file.save(filepath)
-
-                prediction = predict_image(filepath)
-                uploaded_file = filename
+                prediction = predict_image(file)
+                uploaded_file = file.filename
             except Exception as e:
-                # Show detailed error message in browser for debugging
                 return f"<h3>Prediction error:</h3><pre>{str(e)}</pre>", 500
     return render_template("index.html", prediction=prediction, uploaded_file=uploaded_file)
 
-# Health check route for debugging
+# Health check route
 @app.route("/ping")
 def ping():
     return "pong"
