@@ -73,7 +73,6 @@ def index():
             try:
                 upload_dir = "uploads"
                 os.makedirs(upload_dir, exist_ok=True)
-                # secure filename for safety
                 filename = secure_filename(file.filename)
                 filepath = os.path.join(upload_dir, filename)
                 file.save(filepath)
@@ -81,7 +80,8 @@ def index():
                 prediction = predict_image(filepath)
                 uploaded_file = filename
             except Exception as e:
-                return f"Error during prediction: {str(e)}", 500
+                # Return detailed error message in browser for debugging
+                return f"<h2>Error during prediction:</h2><pre>{str(e)}</pre>", 500
     return render_template("index.html", prediction=prediction, uploaded_file=uploaded_file)
 
 # Health check route for debugging
